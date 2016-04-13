@@ -11,6 +11,10 @@ byte addr1[8];
 byte addr2[8];
 byte data[10];
 
+word temp1;
+word temp2;
+word temp3 = 0;
+
 //byte wday = 0;
 //byte hour = 0;
 //byte min  = 0;
@@ -28,6 +32,7 @@ void setup()
   //Serial.println("Running");
   
   if (ds.search(addr1)) {
+    Serial.println("DEV1:");
     Serial.print(addr1[0], HEX);
     Serial.print(addr1[1], HEX);
     Serial.print(addr1[2], HEX);
@@ -40,6 +45,7 @@ void setup()
   }
   
   if (ds.search(addr2)) {
+    Serial.println("DEV2:");
     Serial.print(addr2[0], HEX);
     Serial.print(addr2[1], HEX);
     Serial.print(addr2[2], HEX);
@@ -66,7 +72,6 @@ void loop()
       break;
       
     case 1:
-  //delay(800);        // up to 750ms
       ds.depower();
       ds.reset();
       ds.select(addr1);
@@ -75,29 +80,41 @@ void loop()
       for (i=0; i<9; i++) {
         data[i] = ds.read();
       }
+      temp1 = (data[1] << 8) | data[0];
       break;
       
     case 2:
-      //disp.setCursor(0,1);   // to second line
-      //disp.print(time);
-      //disp.print(counter);
-      //disp.setCursor(7,1);
-      //disp.print( (data[1]<<8) | data[0]);
+      ds.reset();
+      ds.select(addr2);
+      ds.write(0x44, 0);  // start conversion
       break;
-      
+
     case 3:
-      cntMeas++;
-      Serial.print('m');
-      Serial.print(cntMeas, HEX);
-      Serial.print(' ');
-      Serial.print( (data[1]<<8) | data[0], HEX );
-      Serial.print(' ');
-      Serial.print(0x00, HEX);
-      Serial.print(' ');
-      Serial.println(0x00, HEX);
+      ds.depower();
+      ds.reset();
+      ds.select(addr2);
+      ds.write(0xBE, 0);  // Read scratchpad
+
+      for (i=0; i<9; i++) {
+        data[i] = ds.read();
+      }
+      temp2 = (data[1] << 8) | data[0];
       break;
       
     case 4:
+      cntMeas++;
+      Serial.print('m');
+      Serial.print(' ');
+      Serial.print(cntMeas, HEX);
+      Serial.print(' ');
+      Serial.print(temp1, HEX );
+      Serial.print(' ');
+      Serial.print(temp2, HEX);
+      Serial.print(' ');
+      Serial.println(temp3, HEX);
+      break;
+      
+    case 5:
       //P1OUT ^= BIT0;
       P1OUT ^= BIT6;
       break;
